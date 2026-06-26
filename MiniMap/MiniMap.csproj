@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <!-- Package metadata -->
     <PackageId>Duyda.MiniMap</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Authors>Dang Quoc Duy</Authors>
     <Description>MiniMap is a Roslyn source generator that eliminates boilerplate in ASP.NET Core Minimal API projects. Decorate endpoint handler classes with Map attributes, and MiniMap auto-generates the method to register WebApplication route at compile time.</Description>
     <Copyright>Copyright (c) Dang Quoc Duy 2026</Copyright>
