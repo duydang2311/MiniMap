@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Package metadata -->
+    <PackageId>Duyda.MiniMap</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Dang Quoc Duy</Authors>
+    <Description>MiniMap is a Roslyn source generator that eliminates boilerplate in ASP.NET Core Minimal API projects. Decorate endpoint handler classes with Map attributes, and MiniMap auto-generates the method to register WebApplication route at compile time.</Description>
+    <Copyright>Copyright (c) Dang Quoc Duy 2026</Copyright>
+    <PackageProjectUrl>https://codeberg.org/duyda/MiniMap</PackageProjectUrl>
+    <RepositoryUrl>https://codeberg.org/duyda/MiniMap</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>minimal-api;minimap;source-generators;endpoints</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference
+      Include="..\MiniMap.SourceGenerators\MiniMap.SourceGenerators.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all"
+    />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.Gitea" Version="10.0.300" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <None
+      Include="..\MiniMap.SourceGenerators\bin\$(Configuration)\netstandard2.0\MiniMap.SourceGenerators.dll"
+      Pack="true"
+      PackagePath="analyzers/dotnet/cs"
+      Visible="false"
+    />
+  </ItemGroup>
+</Project>
