@@ -1,2 +1,6 @@
 [tasks.build]
-run = "dotnet build-server shutdown; dotnet clean; dotnet build"
+run = "dotnet build-server shutdown && dotnet clean && dotnet build"
+
+[tasks.pack]
+dir ="{{ config_root }}/MiniMap"
+run = "dotnet pack -c Release"

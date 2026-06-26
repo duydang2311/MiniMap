@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace MiniMap.SourceGenerators;
 
 [Generator]
-public sealed partial class MiniMapGenerator : IIncrementalGenerator
+public sealed class MiniMapGenerator : IIncrementalGenerator
 {
     // private static readonly List<string> ATTRIBUTE_FULLY_QUALIFIED_NAMES =
     // [
@@ -96,27 +96,57 @@ public sealed partial class MiniMapGenerator : IIncrementalGenerator
             (node, ct) =>
             {
                 var symbol = node.TargetSymbol;
-                var attribute = symbol
-                    .GetAttributes()
-                    .FirstOrDefault(a =>
-                        a.AttributeClass is not null
-                        && fullyQualifiedMetadataName.Contains(
-                            a.AttributeClass.Name,
+                var allowAnonymous = false;
+                var authorize = false;
+                var disableAntiforgery = false;
+                AttributeData? attribute = null;
+                foreach (var attr in symbol.GetAttributes())
+                {
+                    if (attr.AttributeClass is null)
+                    {
+                        continue;
+                    }
+                    if (
+                        !allowAnonymous
+                        && attr.AttributeClass.Name.Equals(
+                            "AllowAnonymousAttribute",
                             StringComparison.Ordinal
                         )
-                    );
-                var allowAnonymous = symbol
-                    .GetAttributes()
-                    .Any(a =>
-                        a.AttributeClass is not null
-                        && a.AttributeClass.Name.Equals("AllowAnonymousAttribute")
-                    );
-                var authorize = symbol
-                    .GetAttributes()
-                    .Any(a =>
-                        a.AttributeClass is not null
-                        && a.AttributeClass.Name.Equals("AuthorizeAttribute")
-                    );
+                    )
+                    {
+                        allowAnonymous = true;
+                    }
+                    if (
+                        !authorize
+                        && attr.AttributeClass.Name.Equals(
+                            "AuthorizeAttribute",
+                            StringComparison.Ordinal
+                        )
+                    )
+                    {
+                        authorize = true;
+                    }
+                    if (
+                        !disableAntiforgery
+                        && attr.AttributeClass.Name.Equals(
+                            "DisableAntiforgeryAttribute",
+                            StringComparison.Ordinal
+                        )
+                    )
+                    {
+                        disableAntiforgery = true;
+                    }
+                    if (
+                        attribute is null
+                        && fullyQualifiedMetadataName.Contains(
+                            attr.AttributeClass.Name,
+                            StringComparison.Ordinal
+                        )
+                    )
+                    {
+                        attribute = attr;
+                    }
+                }
                 string? pattern = null;
                 if (attribute is not null && attribute.ConstructorArguments.Length > 0)
                 {
@@ -129,7 +159,8 @@ public sealed partial class MiniMapGenerator : IIncrementalGenerator
                     symbol.Name,
                     pattern,
                     allowAnonymous,
-                    authorize
+                    authorize,
+                    disableAntiforgery
                 );
             }
         );
