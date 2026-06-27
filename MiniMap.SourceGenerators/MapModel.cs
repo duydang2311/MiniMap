@@ -1,26 +1,39 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
 namespace MiniMap.SourceGenerators;
 
-public sealed class MapModel(
-    string id,
-    MapMethod[] methods,
-    string fullNamespaceName,
-    string className,
-    string? pattern,
-    bool allowAnonymous,
-    bool authorize,
-    bool disableAntiforgery
-)
+public sealed record MapModel
 {
-    public string Id { get; } = id;
-    public MapMethod[] Methods { get; set; } = methods;
-    public string FullNamespaceName { get; } = fullNamespaceName;
-    public string ClassName { get; } = className;
-    public string? Pattern { get; set; } = pattern;
-    public bool AllowAnonymous { get; } = allowAnonymous;
-    public bool Authorize { get; } = authorize;
-    public bool DisableAntiforgery { get; } = disableAntiforgery;
+    public string Id { get; }
+    public ImmutableArray<MapMethod> Methods { get; }
+    public string FullNamespaceName { get; }
+    public string ClassName { get; }
+    public string? Pattern { get; }
+    public bool AllowAnonymous { get; }
+    public bool Authorize { get; }
+    public bool DisableAntiforgery { get; }
+
+    public MapModel(
+        string id,
+        ImmutableArray<MapMethod> methods,
+        string fullNamespaceName,
+        string className,
+        string? pattern,
+        bool allowAnonymous,
+        bool authorize,
+        bool disableAntiforgery
+    )
+    {
+        Id = id;
+        Methods = methods;
+        FullNamespaceName = fullNamespaceName;
+        ClassName = className;
+        Pattern = pattern;
+        AllowAnonymous = allowAnonymous;
+        Authorize = authorize;
+        DisableAntiforgery = disableAntiforgery;
+    }
 
     public void Write(SourceProductionContext context)
     {
@@ -67,7 +80,11 @@ public static partial class {{ClassName}}
         );
     }
 
-    private static string CallMapMethod(string pattern, MapMethod[] methods, string requestDelegate)
+    private static string CallMapMethod(
+        string pattern,
+        ImmutableArray<MapMethod> methods,
+        string requestDelegate
+    )
     {
         if (methods.Length > 1)
         {

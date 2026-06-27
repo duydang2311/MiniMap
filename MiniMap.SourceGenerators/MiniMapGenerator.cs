@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -37,17 +38,17 @@ public sealed class MiniMapGenerator : IIncrementalGenerator
                 }
             );
 
-        context.RegisterSourceOutput(
-            combined,
-            static (context, models) =>
+        var transformed = combined.Select(
+            (models, ct) =>
             {
+                var transformed = new List<MapModel>(models.Length);
                 foreach (var group in models.GroupBy(m => m.Id))
                 {
                     var list = group.ToList();
                     var model = list[0];
                     if (list.Count == 1)
                     {
-                        model.Write(context);
+                        transformed.Add(model);
                         continue;
                     }
 
@@ -74,8 +75,29 @@ public sealed class MiniMapGenerator : IIncrementalGenerator
                         continue;
                     }
 
-                    model.Methods = [.. list.SelectMany(m => m.Methods).Distinct()];
-                    model.Pattern = pattern;
+                    transformed.Add(
+                        new MapModel(
+                            model.Id,
+                            [.. list.SelectMany(m => m.Methods).Distinct()],
+                            model.FullNamespaceName,
+                            model.ClassName,
+                            pattern,
+                            model.AllowAnonymous,
+                            model.Authorize,
+                            model.DisableAntiforgery
+                        )
+                    );
+                }
+                return transformed.ToImmutableArray();
+            }
+        );
+
+        context.RegisterSourceOutput(
+            transformed,
+            static (context, models) =>
+            {
+                foreach (var model in models)
+                {
                     model.Write(context);
                 }
             }
