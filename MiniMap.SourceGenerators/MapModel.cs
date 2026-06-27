@@ -42,18 +42,25 @@ public sealed record MapModel
             throw new ArgumentNullException("pattern", "pattern must not be null");
         }
 
+        var usings = """"
+using global::Microsoft.AspNetCore.Builder;   
+"""";
+        if (Methods.Length > 1)
+        {
+            usings += "\nusing HttpMethods = global::Microsoft.AspNetCore.Http.HttpMethods;";
+        }
         var configureEndpoint = string.Empty;
         if (AllowAnonymous)
         {
-            configureEndpoint += ".AllowAnonymous()";
+            configureEndpoint += "\n            .AllowAnonymous()";
         }
         if (Authorize)
         {
-            configureEndpoint += ".RequireAuthorization()";
+            configureEndpoint += "\n            .RequireAuthorization()";
         }
         if (DisableAntiforgery)
         {
-            configureEndpoint += ".DisableAntiforgery()";
+            configureEndpoint += "\n            .DisableAntiforgery()";
         }
 
         context.AddSource(
@@ -64,7 +71,7 @@ public sealed record MapModel
 /// Auto-generated Map method to register endpoint route by MiniMap.
 /// </summary>
 
-using Microsoft.AspNetCore.Builder;
+{{usings}}
 
 namespace {{FullNamespaceName}};
 
@@ -98,11 +105,11 @@ public static partial class {{ClassName}}
     {
         return method switch
         {
-            MapMethod.Get => "global::Microsoft.AspNetCore.Http.HttpMethods.Get",
-            MapMethod.Post => "global::Microsoft.AspNetCore.Http.HttpMethods.Post",
-            MapMethod.Put => "global::Microsoft.AspNetCore.Http.HttpMethods.Put",
-            MapMethod.Delete => "global::Microsoft.AspNetCore.Http.HttpMethods.Delete",
-            MapMethod.Patch => "global::Microsoft.AspNetCore.Http.HttpMethods.Patch",
+            MapMethod.Get => "HttpMethods.Get",
+            MapMethod.Post => "HttpMethods.Post",
+            MapMethod.Put => "HttpMethods.Put",
+            MapMethod.Delete => "HttpMethods.Delete",
+            MapMethod.Patch => "HttpMethods.Patch",
             _ => throw new InvalidOperationException(),
         };
     }
