@@ -41,8 +41,12 @@ public sealed class MiniMapGenerator : IIncrementalGenerator
         var transformed = combined.Select(
             (models, ct) =>
             {
-                var transformed = new List<MapModel>(models.Length);
-                foreach (var group in models.GroupBy(m => m.Id))
+                var groups = models
+                    .Where(m => !string.IsNullOrEmpty(m.HandlerMethod))
+                    .GroupBy(m => m.Id)
+                    .ToList();
+                var transformed = new List<MapModel>(groups.Count);
+                foreach (var group in groups)
                 {
                     var list = group.ToList();
                     var model = list[0];
@@ -82,6 +86,7 @@ public sealed class MiniMapGenerator : IIncrementalGenerator
                             model.FullNamespaceName,
                             model.ClassName,
                             pattern,
+                            model.HandlerMethod,
                             model.AllowAnonymous,
                             model.Authorize,
                             model.DisableAntiforgery
@@ -117,7 +122,7 @@ public sealed class MiniMapGenerator : IIncrementalGenerator
                 && cds.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)),
             (node, ct) =>
             {
-                var symbol = node.TargetSymbol;
+                var symbol = (INamedTypeSymbol)node.TargetSymbol;
                 var allowAnonymous = false;
                 var authorize = false;
                 var disableAntiforgery = false;
@@ -174,12 +179,31 @@ public sealed class MiniMapGenerator : IIncrementalGenerator
                 {
                     pattern = (string)attribute.ConstructorArguments[0].Value!;
                 }
+
+                IMethodSymbol? handlerMethod = null;
+                foreach (var member in symbol.GetMembers())
+                {
+                    if (member is not IMethodSymbol method)
+                    {
+                        continue;
+                    }
+                    if (method.Name.Equals("HandleAsync", StringComparison.Ordinal))
+                    {
+                        handlerMethod = method;
+                        break;
+                    }
+                    else if (method.Name.Equals("Handle", StringComparison.Ordinal))
+                    {
+                        handlerMethod = method;
+                    }
+                }
                 return new MapModel(
                     symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                     [MapMethodFromMetadataName(fullyQualifiedMetadataName)],
                     symbol.ContainingNamespace.ToDisplayString(),
                     symbol.Name,
                     pattern,
+                    handlerMethod?.Name,
                     allowAnonymous,
                     authorize,
                     disableAntiforgery

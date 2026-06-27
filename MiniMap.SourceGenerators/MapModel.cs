@@ -10,6 +10,7 @@ public sealed record MapModel
     public string FullNamespaceName { get; }
     public string ClassName { get; }
     public string? Pattern { get; }
+    public string? HandlerMethod { get; }
     public bool AllowAnonymous { get; }
     public bool Authorize { get; }
     public bool DisableAntiforgery { get; }
@@ -20,6 +21,7 @@ public sealed record MapModel
         string fullNamespaceName,
         string className,
         string? pattern,
+        string? handlerMethod,
         bool allowAnonymous,
         bool authorize,
         bool disableAntiforgery
@@ -30,6 +32,7 @@ public sealed record MapModel
         FullNamespaceName = fullNamespaceName;
         ClassName = className;
         Pattern = pattern;
+        HandlerMethod = handlerMethod;
         AllowAnonymous = allowAnonymous;
         Authorize = authorize;
         DisableAntiforgery = disableAntiforgery;
@@ -39,7 +42,11 @@ public sealed record MapModel
     {
         if (Pattern is null)
         {
-            throw new ArgumentNullException("pattern", "pattern must not be null");
+            throw new InvalidOperationException("Pattern must not be null");
+        }
+        if (HandlerMethod is null)
+        {
+            throw new InvalidOperationException("HandlerMethod must not be null");
         }
 
         var usings = """"
@@ -79,7 +86,7 @@ public static partial class {{ClassName}}
 {
     public static void Map(global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder)
     {
-        builder.{{CallMapMethod(Pattern, Methods, $"{Id}.HandleAsync")}}{{configureEndpoint}};
+        builder.{{CallMapMethod(Pattern, Methods, $"{Id}.{HandlerMethod}")}}{{configureEndpoint}};
     }
 }
 
